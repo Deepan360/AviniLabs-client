@@ -1,0 +1,28 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Make the body take up full viewport height */
+    margin: 0;
+    /* Remove default margin */
+    background-color: #ffffff;
+    /* Optional: Light background color */
+}
+
+.form-container {
+    background-color: rgb(236, 236, 236);
+    /* Background for your content */
+    padding: 20px;
+    border-radius: 10px;
+    /* Optional: Rounded corners */
+    box-shadow: 0 0px 12px 3px rgba(0, 0, 0, 0.3);
+    /* Optional: Box shadow */
+    width: 100%;
+    max-width: 800px;
+    /* Limit width */
+}
+.form-title{
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
