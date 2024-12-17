@@ -5,15 +5,16 @@ import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import LandingPage from "./pages/LandingPage";
 import CustomerPage from "./pages/CustomerPage";
 import NewCustomer from "./pages/NewCustomer";
+import LifetimemembershipPage from "./pages/LifetimemembershipPage";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#e30083",
+      main: "#e5097f",
     },
     secondary: {
-      main: "#9e9e9f",
-      contrastText: "#e30083",
+      main: "#727271",
+      contrastText: "#e5097f",
     },
   },
   typography: {
@@ -35,6 +36,10 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/CustomerPage" element={<CustomerPage />} />
           <Route path="/NewCustomer" element={<NewCustomer />} />
+          <Route
+            path="/LifetimemembershipPage"
+            element={<LifetimemembershipPage />}
+          />
         </Routes>
       </Router>
     </ThemeProvider>
