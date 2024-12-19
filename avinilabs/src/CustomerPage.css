@@ -4,7 +4,7 @@ body {
     align-items: center;
     height: 100vh;
     /* Make the body take up full viewport height */
-    margin: 0;
+    margin: 20 !important;
     /* Remove default margin */
     background-color: #ffffff;
     /* Optional: Light background color */

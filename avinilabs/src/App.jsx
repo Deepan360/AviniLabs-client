@@ -25,7 +25,20 @@ const theme = createTheme({
       fontWeight: 600,
     },
   },
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiInputBase-input::placeholder": {
+            color: "white", // Set placeholder color to white
+            opacity: 1, // Ensure visibility
+          },
+        },
+      },
+    },
+  },
 });
+
 
 const App = () => {
   return (
