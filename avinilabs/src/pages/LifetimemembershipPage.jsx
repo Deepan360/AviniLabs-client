@@ -39,7 +39,7 @@ const LifetimemembershipPage = () => {
             fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" }, // Adjust font size to fit smaller screen
           }}
         >
-          Welcome to Lifetime Membership!
+          Welcome to Lifetime Digital Discount Card!
         </Typography>
         <Typography
           variant="h5"

@@ -1,301 +1,294 @@
-import { useState, useEffect } from "react"; // Removed useRef and useReactToPrint imports
-import DataTable from "react-data-table-component";
+// eslint-disable-next-line no-unused-vars
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
-  IconButton,
-  Tooltip,
-  Card,
-  CardContent,
+  TextField,
   Typography,
-  Button,
+  Box,
+  Card,
+  Avatar,
+  Grid,
+  Divider,
+  Link
 } from "@mui/material";
-import { Delete, Edit, AddCircle, Discount } from "@mui/icons-material";
-import html2canvas from "html2canvas"; // For capturing image
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import PersonIcon from "@mui/icons-material/Person";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Success icon (tick)
+import CancelIcon from "@mui/icons-material/Cancel"; // Error icon (X)
 import "../CustomerPage.css";
 
-// Simulated data for the customers
-const sampleData = [
-  {
-    id: 1,
-    customername: "John Doe",
-    mobileno: "1234567890",
-    dob: "1995-01-01",
-    gender: "Male",
-    address: "123 Main St",
-  },
-  {
-    id: 2,
-    customername: "Jane Smith",
-    mobileno: "1234567891",
-    dob: "1994-05-12",
-    gender: "Female",
-    address: "456 Oak St",
-  },
-  {
-    id: 3,
-    customername: "Michael Johnson",
-    mobileno: "1234567892",
-    dob: "1992-09-24",
-    gender: "Male",
-    address: "789 Pine St",
-  },
-  // Add more data here...
-];
-
 const CustomerPage = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showCard, setShowCard] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState({
+    customername: "",
+    mobileno: "",
+    dob: "",
+    gender: "",
+    address: "",
+    city: "",
+    state: "",
+  });
 
-  // Simulate data fetching
   useEffect(() => {
-    setTimeout(() => {
-      setData(sampleData); // Replace with actual API call
-      setLoading(false);
-    }, 1000);
-  }, []);
+    if (/^\d{10}$/.test(mobileNumber)) {
+      checkMobileNumber(mobileNumber);
+    } else if (mobileNumber) {
+      setMessage("Please enter a valid 10-digit mobile number.");
+      setError(true);
+      setCustomerDetails({
+        customername: "",
+        mobileno: "",
+        dob: "",
+        gender: "",
+        address: "",
+        city: "",
+        state: "",
+      });
+    }
+  }, [mobileNumber]);
 
-  const handleEdit = (id) => {
-    console.log(`Editing row with ID: ${id}`);
-  };
+  const checkMobileNumber = async (mobile) => {
+    try {
+      const response = await axios.get(
+        `http://136.185.14.8:8776/auth/checkMobileNumberavini`,
+        { params: { mobileno: mobile } }
+      );
 
-  const handleDelete = (id) => {
-    console.log(`Deleting row with ID: ${id}`);
-  };
+      if (response.data && response.data.data) {
+        const customerArray = response.data.data;
 
-  const handleAddRow = () => {
-    console.log("Adding new row");
-  };
-
-  const handleDetails = (id) => {
-    const customer = data.find((customer) => customer.id === id);
-    setSelectedCustomer(customer);
-    setShowCard(true); // Show the card when Discount is clicked
-  };
-
-  const handleCloseCard = () => {
-    setShowCard(false);
-    setSelectedCustomer(null);
-  };
-
-  // Function to download the card as an image
-  const handleDownloadCard = () => {
-    const cardElement = document.getElementById("digitalCard");
-
-    // Ensure only the design area is captured, excluding the button
-    const clonedCard = cardElement.cloneNode(true);
-    const downloadButton = clonedCard.querySelector("button");
-    if (downloadButton) downloadButton.remove(); // Remove download button from the image capture
-
-    html2canvas(clonedCard).then((canvas) => {
-      const dataUrl = canvas.toDataURL("image/png"); // Generate image as PNG
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `customer-${selectedCustomer.id}-ecard.png`; // File name
-      link.click();
-    });
-  };
-
-  const columns = [
-    { name: "ID", selector: (row) => row.id, sortable: true, width: "70px" },
-    {
-      name: "Customer Name",
-      selector: (row) => row.customername,
-      sortable: true,
-      wrap: true,
-    },
-    { name: "Mobile Number", selector: (row) => row.mobileno, sortable: true },
-    { name: "Date of Birth", selector: (row) => row.dob, sortable: true },
-    {
-      name: "Gender",
-      selector: (row) => row.gender,
-      sortable: true,
-      width: "100px",
-    },
-    { name: "Address", selector: (row) => row.address, wrap: true },
-
-    // New Discount column with an icon
-    {
-      name: "Discount",
-      cell: (row) => (
-        <Tooltip title="View Discount">
-          <IconButton color="primary" onClick={() => handleDetails(row.id)}>
-            <Discount />
-          </IconButton>
-        </Tooltip>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
-
-    // Action buttons (Edit, Delete)
-    {
-      name: "Actions",
-      cell: (row) => (
-        <>
-          <Tooltip title="Edit">
-            <IconButton color="primary" onClick={() => handleEdit(row.id)}>
-              <Edit />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              sx={{ color: "red" }}
-              onClick={() => handleDelete(row.id)}
-            >
-              <Delete />
-            </IconButton>
-          </Tooltip>
-        </>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
-  ];
-
-  const customStyles = {
-    table: {
-      style: {
-        minHeight: "300px",
-        maxHeight: "500px",
-        overflowY: "auto",
-      },
-    },
-    responsiveWrapper: {
-      style: {
-        overflowY: "auto",
-      },
-    },
+        if (customerArray.length > 0) {
+          const customer = customerArray[0];
+          setCustomerDetails(customer);
+          setMessage(""); // Clear any previous messages
+          setError(false);
+        } else {
+          setCustomerDetails({
+            customername: "",
+            mobileno: "",
+            dob: "",
+            gender: "",
+            address: "",
+            city: "",
+            state: "",
+          });
+          setMessage(
+            "No registered subscription found for this mobile number."
+          );
+          setError(true); // Set error to true since no customer is found
+        }
+      } else {
+        setMessage("Invalid response format.");
+        setError(true);
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setMessage("Error checking mobile number. Please try again later.");
+      setError(true);
+      setCustomerDetails({
+        customername: "",
+        mobileno: "",
+        dob: "",
+        gender: "",
+        address: "",
+        city: "",
+        state: "",
+      });
+    }
   };
 
   return (
-    <div style={{ padding: "0px" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "0px" }}>
-        Customer Details
-      </h1>
-      <Tooltip title="Add New Row">
-        <IconButton
-          color="success"
-          style={{ marginBottom: "10px" }}
-          onClick={handleAddRow}
-        >
-          <AddCircle fontSize="large" />
-        </IconButton>
-      </Tooltip>
-
-      {/* DataTable */}
-      <div style={{ maxHeight: "100vh", overflowY: "auto" }}>
-        <DataTable
-          title="Customer Details"
-          columns={columns}
-          data={data}
-          progressPending={loading}
-          pagination
-          highlightOnHover
-          striped
-          responsive
-          defaultSortFieldId={1}
-          customStyles={customStyles}
+    <>
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+        <img
+          src="/images/logo.jpeg"
+          alt="Logo"
+          style={{
+            width: "400px",
+            height: "auto",
+          }}
         />
-      </div>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+          marginTop: 6,
+          padding: 4,
+          backgroundColor: "#f9f9f9",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Avatar sx={{ bgcolor: "primary.main", width: 64, height: 64 }}>
+            <PersonIcon sx={{ fontSize: 40 }} />
+          </Avatar>
+          <Typography variant="h4" fontWeight="bold">
+            Customer Lookup
+          </Typography>
+        </Box>
 
-      {/* Discount Card Display with Overlay */}
-      {showCard && selectedCustomer && (
-        <>
-          {/* Overlay */}
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "rgba(0, 0, 0, 0.5)", // semi-transparent black
-              zIndex: 1000,
-            }}
-            onClick={handleCloseCard}
-          ></div>
+        {/* Mobile Number Input */}
+        <TextField
+          label="Enter Mobile Number"
+          variant="outlined"
+          value={mobileNumber}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only numeric input and restrict to 10 digits
+            if (/^\d{0,10}$/.test(value)) {
+              setMobileNumber(value); // Update state only if the value is valid
+            }
+          }}
+          error={error}
+          helperText={error ? message : ""}
+          sx={{ width: "100%", maxWidth: 400 }}
+        />
 
-          {/* Discount Card */}
-          <Card
-            id="digitalCard" // Set the ID for the card element
-            style={{
-              width: "350px",
-              padding: "20px",
-              borderRadius: "15px",
-              boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)",
-              background: "linear-gradient(135deg, #6e7dff, #8b63f1)",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 1001,
-              color: "#fff",
-            }}
+        {/* Message */}
+        {message && !error && (
+          <Typography
+            variant="subtitle1"
+            color="success.main"
+            sx={{ marginTop: 2 }}
           >
-            <CardContent>
+            {message}
+            <CheckCircleIcon
+              sx={{ fontSize: 20, marginLeft: 1 }}
+              color="success"
+            />
+          </Typography>
+        )}
+
+        {/* Error message with icon */}
+        {error && message && (
+          <Typography
+            variant="subtitle1"
+            color="error.main"
+            sx={{ marginTop: 2, display: "flex", alignItems: "center" }}
+          >
+            <CancelIcon sx={{ fontSize: 20, marginRight: 1 }} color="error" />
+            {message}
+          </Typography>
+        )}
+
+        {/* Customer Card */}
+        {customerDetails.customername && (
+          <Card sx={{ width: "100%", maxWidth: 600, marginTop: 4, padding: 3 }}>
+            {/* Subscribed Member Icon with Text */}
+            <Box
+              sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}
+            >
+              <CheckCircleIcon
+                sx={{ fontSize: 20, color: "primary.main", marginRight: 1 }}
+              />
               <Typography
-                variant="h6"
-                style={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  fontSize: "22px",
-                  marginBottom: "15px",
-                }}
+                variant="body1"
+                color="primary.main"
+                fontWeight="500px"
               >
-                Customer Digital Card
+                Subscribed Member
               </Typography>
-              <Typography style={{ fontSize: "16px" }}>
-                <strong>Name:</strong> {selectedCustomer.customername}
-              </Typography>
-              <Typography style={{ fontSize: "16px" }}>
-                <strong>Mobile:</strong> {selectedCustomer.mobileno}
-              </Typography>
-              <Typography style={{ fontSize: "16px" }}>
-                <strong>Gender:</strong> {selectedCustomer.gender}
-              </Typography>
-              <Typography style={{ fontSize: "16px" }}>
-                <strong>Discount Available:</strong> 20% OFF
-              </Typography>
+            </Box>
 
-              {/* Download Button */}
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                style={{
-                  marginTop: "20px",
-                  backgroundColor: "#ff4081",
-                  color: "#fff",
-                  borderRadius: "25px",
-                  fontWeight: "bold",
-                }}
-                onClick={handleDownloadCard} // Trigger the download
-              >
-                Download eCard
-              </Button>
-
-              {/* Close Button */}
-              <Button
-                variant="outlined"
-                fullWidth
-                style={{
-                  marginTop: "10px",
-                  color: "#ff6f61",
-                  borderRadius: "25px",
-                  fontWeight: "bold",
-                }}
-                onClick={handleCloseCard}
-              >
-                Close
-              </Button>
-            </CardContent>
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              textAlign="center"
+              sx={{
+                textTransform: "capitalize",
+                marginBottom: 2,
+                color: "primary.main",
+              }}
+            >
+              {customerDetails.customername}
+            </Typography>
+            <Divider sx={{ marginBottom: 2 }} />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>Mobile:</strong> {customerDetails.mobileno}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>DOB:</strong> {customerDetails.dob}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>Gender:</strong> {customerDetails.gender}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>Address:</strong> {customerDetails.address}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>City:</strong> {customerDetails.city}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>State:</strong> {customerDetails.state}
+                </Typography>
+              </Grid>
+            </Grid>
           </Card>
-        </>
-      )}
-    </div>
+        )}
+
+        {/* No customer found message */}
+        {!customerDetails.customername && !error && (
+          <Typography variant="body1" color="textSecondary" sx={{ mt: 2 }}>
+            No customer details found. Please check the mobile number again.
+          </Typography>
+        )}
+      </Box>
+      <Typography
+        sx={{
+          display: "flex",
+          justifyContent:  "center",
+          alignItems: "center",
+          mt: 2,
+          color: "grey",
+        }}
+      >
+        Powered by{" "}
+        <Link
+          href="https://akilamtechnology.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            textDecoration: "none",
+            color: "primary.main",
+            ml: 0.5,
+            "&:hover": { color: "primary.main" },
+          }}
+        >
+          Akilam Technology
+        </Link>
+        <FavoriteIcon
+          sx={{
+            color: "primary.main",
+            ml: 0.5,
+          }}
+        />
+      </Typography>
+    </>
   );
 };
 

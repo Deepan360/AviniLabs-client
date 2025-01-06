@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import LandingPage from "./pages/LandingPage";
-import CustomerPage from "./pages/CustomerPage";
+import CustomerPage from "./pages/CustomerPage"; // Ensure CustomerPage component is imported
 import NewCustomer from "./pages/NewCustomer";
 import LifetimemembershipPage from "./pages/LifetimemembershipPage";
 
